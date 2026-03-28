@@ -1,5 +1,6 @@
 import PulseDashboard from "../components/pulse-dashboard";
 import { getStudentSnapshot } from "../lib/newton-adapter";
+import { getDemoScenarios } from "../lib/newton-demo";
 import {
   buildIntelligence,
   getDataSources,
@@ -8,11 +9,15 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
-  const studentSnapshot = await getStudentSnapshot();
+export default async function Home({ searchParams }) {
+  const resolvedSearchParams = await searchParams;
+  const scenario = resolvedSearchParams?.scenario ?? "founder";
+
+  const studentSnapshot = await getStudentSnapshot({ scenario });
   const intelligence = buildIntelligence(studentSnapshot);
   const checklist = getIntegrationChecklist();
   const dataSources = getDataSources();
+  const demoScenarios = getDemoScenarios();
 
   return (
     <PulseDashboard
@@ -20,6 +25,10 @@ export default async function Home() {
       intelligence={intelligence}
       checklist={checklist}
       dataSources={dataSources}
+      reviewOptions={{
+        activeScenario: scenario,
+        scenarios: demoScenarios,
+      }}
     />
   );
 }

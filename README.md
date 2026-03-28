@@ -16,6 +16,7 @@ It uses Newton data to power:
 - a dynamic intervention planner where a student picks `30 / 60 / 120 / 180` minutes and gets a realistic action sequence
 - a missed-class recovery engine
 - an adaptive practice coach connected to weak modules and streak surfaces
+- a hosted review mode with scenario switching for judges
 
 ## Newton MCP mapping
 
@@ -66,9 +67,35 @@ npx -y @newtonschool/newton-mcp@latest login
 
 3. For hosted deployments, set `NEWTON_ACCESS_TOKEN` and optionally `NEWTON_COURSE_HASH` on the server.
 
-4. The adapter keeps the UI contract stable by normalizing live Newton responses into the shared Pulse snapshot shape in [`src/lib/newton-live.js`](/Users/uditjain/my-app/src/lib/newton-live.js).
+4. The adapter keeps the UI contract stable by normalizing live Newton responses into the shared Pulse snapshot shape in `src/lib/newton-live.js`.
 
 5. Persist daily briefs and completed interventions so Pulse gets smarter over time.
+
+## Reviewer-friendly hosted flow
+
+Hosted reviewers will usually not have Newton auth configured.
+
+To make the product still evaluable, Pulse includes review scenarios:
+
+- `Founder mode`
+- `Deadline spiral`
+- `Comeback week`
+
+These scenarios visibly change:
+
+- health score
+- risk pressure
+- backlog
+- intervention plan
+- recovery flow
+- next-five-days forecast
+
+That means judges can still test whether the product logic is genuinely adaptive.
+
+## Submission docs
+
+- project submission notes: `docs/SUBMISSION.md`
+- demo/video script: `docs/DEMO_SCRIPT.md`
 
 ## Why this is useful to everyone
 
@@ -83,3 +110,7 @@ Pulse solves that by answering:
 - What practice move creates the most momentum right now?
 
 That makes it broadly useful across semesters, not just as a personal dashboard.
+
+## Repository
+
+GitHub: `https://github.com/uditjainstjis/pulse-newton-mcp`

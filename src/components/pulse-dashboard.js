@@ -19,6 +19,7 @@ export default function PulseDashboard({
   intelligence,
   checklist,
   dataSources,
+  reviewOptions,
 }) {
   const commands = Object.keys(intelligence.commandResponses);
   const durations = [...new Set(intelligence.focusBlueprints.map((plan) => plan.minutes))];
@@ -46,6 +47,78 @@ export default function PulseDashboard({
   return (
     <div className="grain min-h-screen">
       <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
+        <section className="surface rounded-[30px] border border-white/80 px-5 py-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-3xl">
+              <p className="eyebrow text-[var(--teal)]">Reviewer mode</p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-slate-900">
+                Test Pulse in live mode on this machine, or switch hosted demos to compare student states.
+              </h2>
+              <p className="mt-3 text-sm leading-7 text-slate-700">
+                Hosted previews usually run in demo mode unless a Newton access token is configured on
+                the server. To make the product reviewable without login, Pulse includes multiple
+                student scenarios that visibly change the planner, risk score, and recovery logic.
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 lg:w-[28rem]">
+              <ModeCard
+                label="Current source"
+                value={snapshot.source?.label || "Unknown source"}
+                note={
+                  snapshot.source?.mode === "live"
+                    ? "Using real Newton semester data."
+                    : "Using shareable reviewer demo data."
+                }
+              />
+              <ModeCard
+                label="What changes"
+                value="Planner adapts"
+                note="Assignments, backlog, risk pressure, and recommended next moves update per scenario."
+              />
+            </div>
+          </div>
+
+          {snapshot.source?.mode !== "live" ? (
+            <div className="mt-6 flex flex-wrap gap-3">
+              {reviewOptions.scenarios.map((scenario) => (
+                <a
+                  key={scenario.key}
+                  href={`/?scenario=${scenario.key}`}
+                  className={`rounded-full border px-4 py-2 text-sm transition ${
+                    reviewOptions.activeScenario === scenario.key
+                      ? "border-slate-900 bg-slate-900 text-white"
+                      : "border-[var(--line)] bg-white text-slate-700"
+                  }`}
+                >
+                  {scenario.label}
+                </a>
+              ))}
+            </div>
+          ) : null}
+
+          {snapshot.source?.mode !== "live" ? (
+            <div className="mt-4 grid gap-4 lg:grid-cols-3">
+              {reviewOptions.scenarios.map((scenario) => (
+                <article
+                  key={scenario.key}
+                  className={`rounded-[22px] border px-4 py-4 ${
+                    reviewOptions.activeScenario === scenario.key
+                      ? "border-slate-900 bg-slate-900 text-white"
+                      : "border-white/80 bg-white/70 text-slate-900"
+                  }`}
+                >
+                  <p className="eyebrow opacity-70">Scenario</p>
+                  <h3 className="mt-2 text-lg font-semibold tracking-[-0.03em]">
+                    {scenario.label}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 opacity-80">{scenario.summary}</p>
+                </article>
+              ))}
+            </div>
+          ) : null}
+        </section>
+
         <section className="surface-strong rise-in overflow-hidden rounded-[36px]">
           <div className="grid gap-6 px-6 py-8 lg:grid-cols-[1.32fr_0.88fr] lg:px-8 lg:py-10">
             <div className="space-y-8">
@@ -109,7 +182,7 @@ export default function PulseDashboard({
                     <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em]">
                       {snapshot.student.name}
                     </h2>
-                  <p className="mt-1 text-sm text-slate-300">
+                    <p className="mt-1 text-sm text-slate-300">
                       {snapshot.course.title} / {snapshot.student.targetRole}
                     </p>
                   </div>
@@ -691,6 +764,16 @@ function SourceCard({ item }) {
       <p className="eyebrow text-slate-500">{item.label}</p>
       <p className="mt-2 font-mono text-xs text-[var(--teal)]">{item.source}</p>
       <p className="mt-3 text-sm leading-6 text-slate-700">{item.impact}</p>
+    </article>
+  );
+}
+
+function ModeCard({ label, value, note }) {
+  return (
+    <article className="rounded-[22px] border border-white/70 bg-white/75 p-4">
+      <p className="eyebrow text-slate-500">{label}</p>
+      <p className="mt-2 text-lg font-semibold tracking-[-0.03em] text-slate-900">{value}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-700">{note}</p>
     </article>
   );
 }
