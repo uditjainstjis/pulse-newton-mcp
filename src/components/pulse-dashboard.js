@@ -1,6 +1,13 @@
 "use client";
 
-import { startTransition, useDeferredValue, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  startTransition,
+  useDeferredValue,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 const riskTone = {
   low: "bg-emerald-100 text-emerald-800",
@@ -21,6 +28,9 @@ export default function PulseDashboard({
   dataSources,
   reviewOptions,
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const commands = Object.keys(intelligence.commandResponses);
   const durations = [...new Set(intelligence.focusBlueprints.map((plan) => plan.minutes))];
   const objectives = Object.keys(objectiveLabels);
@@ -44,8 +54,18 @@ export default function PulseDashboard({
         plan.minutes === selectedDuration && plan.objective === selectedObjective,
     ) ?? intelligence.focusBlueprints[0];
 
+  const switchScenario = (scenarioKey) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("scenario", scenarioKey);
+
+    startTransition(() => {
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    });
+  };
+
   return (
     <div className="grain min-h-screen">
+      <RainbowCursor />
       <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
         <section className="surface rounded-[30px] border border-white/80 px-5 py-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -82,17 +102,18 @@ export default function PulseDashboard({
           {snapshot.source?.mode !== "live" ? (
             <div className="mt-6 flex flex-wrap gap-3">
               {reviewOptions.scenarios.map((scenario) => (
-                <a
+                <button
                   key={scenario.key}
-                  href={`/?scenario=${scenario.key}`}
-                  className={`rounded-full border px-4 py-2 text-sm transition ${
+                  type="button"
+                  onClick={() => switchScenario(scenario.key)}
+                  className={`rounded-full border px-4 py-2 text-sm transition focus:outline-none ${
                     reviewOptions.activeScenario === scenario.key
-                      ? "border-slate-900 bg-slate-900 text-white"
-                      : "border-[var(--line)] bg-white text-slate-700"
+                      ? "border-slate-900 bg-slate-900 !text-white shadow-[0_14px_30px_rgba(18,32,41,0.22)]"
+                      : "border-[var(--line)] bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50"
                   }`}
                 >
                   {scenario.label}
-                </a>
+                </button>
               ))}
             </div>
           ) : null}
@@ -775,5 +796,86 @@ function ModeCard({ label, value, note }) {
       <p className="mt-2 text-lg font-semibold tracking-[-0.03em] text-slate-900">{value}</p>
       <p className="mt-2 text-sm leading-6 text-slate-700">{note}</p>
     </article>
+  );
+}
+
+function RainbowCursor() {
+  const [trail, setTrail] = useState([]);
+  const [visible, setVisible] = useState(false);
+  const orbRef = useRef(null);
+  const hueRef = useRef(0);
+  const lastTrailTimeRef = useRef(0);
+
+  useEffect(() => {
+    const onPointerMove = (event) => {
+      setVisible(true);
+
+      if (orbRef.current) {
+        orbRef.current.style.transform = `translate(${event.clientX}px, ${event.clientY}px)`;
+      }
+
+      const now = performance.now();
+      if (now - lastTrailTimeRef.current < 28) {
+        return;
+      }
+
+      lastTrailTimeRef.current = now;
+      hueRef.current = (hueRef.current + 18) % 360;
+
+      const item = {
+        id: now,
+        x: event.clientX,
+        y: event.clientY,
+        hue: hueRef.current,
+      };
+
+      setTrail((current) => [...current.slice(-16), item]);
+    };
+
+    const onPointerLeave = () => {
+      setVisible(false);
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerleave", onPointerLeave);
+
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerleave", onPointerLeave);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (trail.length === 0) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      setTrail((current) => current.slice(1));
+    }, 420);
+
+    return () => window.clearTimeout(timer);
+  }, [trail]);
+
+  return (
+    <>
+      <div
+        ref={orbRef}
+        className={`rainbow-cursor ${visible ? "opacity-100" : "opacity-0"}`}
+      />
+      <div className="pointer-events-none fixed inset-0 z-[70] hidden md:block">
+        {trail.map((item, index) => (
+          <span
+            key={item.id}
+            className="rainbow-trail"
+            style={{
+              transform: `translate(${item.x}px, ${item.y}px) scale(${1 - index * 0.045})`,
+              background: `linear-gradient(135deg, hsl(${item.hue} 95% 62%), hsl(${(item.hue + 110) % 360} 95% 62%))`,
+              opacity: Math.max(0.08, 0.75 - index * 0.07),
+            }}
+          />
+        ))}
+      </div>
+    </>
   );
 }
