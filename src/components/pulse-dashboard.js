@@ -44,6 +44,13 @@ export default function PulseDashboard({
 
   const deferredCommand = useDeferredValue(selectedCommand);
 
+  const scenarioChipBase =
+    "rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900";
+  const scenarioActiveChip =
+    "border-transparent bg-gradient-to-r from-[#6f4cff] via-[#8c5dff] to-[#a65dff] text-white shadow-[0_14px_30px_rgba(18,32,41,0.22)]";
+  const scenarioInactiveChip =
+    "border-[var(--line)] bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50";
+
   const sprintPlan =
     intelligence.sprintOptions.find((option) => option.label === selectedSprint) ??
     intelligence.sprintOptions[0];
@@ -106,11 +113,12 @@ export default function PulseDashboard({
                   key={scenario.key}
                   type="button"
                   onClick={() => switchScenario(scenario.key)}
-                  className={`rounded-full border px-4 py-2 text-sm transition focus:outline-none ${
+                  className={`${scenarioChipBase} ${
                     reviewOptions.activeScenario === scenario.key
-                      ? "border-slate-900 bg-slate-900 !text-white shadow-[0_14px_30px_rgba(18,32,41,0.22)]"
-                      : "border-[var(--line)] bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50"
+                      ? scenarioActiveChip
+                      : scenarioInactiveChip
                   }`}
+                  aria-pressed={reviewOptions.activeScenario === scenario.key}
                 >
                   {scenario.label}
                 </button>

@@ -43,6 +43,7 @@ The current app already includes:
 - deadline-aware recovery logic
 - Newton data-source documentation in code
 - a JSON demo API contract at `src/app/api/demo/brief/route.js`
+- a standalone `/autopilot` concierge that orders assignments, highlights start/stop windows, and surfaces readiness metrics from `src/lib/autopilot.js`
 
 ## Run locally
 
@@ -70,6 +71,16 @@ npx -y @newtonschool/newton-mcp@latest login
 4. The adapter keeps the UI contract stable by normalizing live Newton responses into the shared Pulse snapshot shape in `src/lib/newton-live.js`.
 
 5. Persist daily briefs and completed interventions so Pulse gets smarter over time.
+
+## Environment variables
+
+| Variable | Purpose |
+| --- | --- |
+| `NEWTON_PROVIDER` / `NEXT_PUBLIC_NEWTON_PROVIDER` | Toggle live vs demo data; defaults to `auto`. Set to `demo` for reviewer builds and `live` when your token exists. |
+| `NEWTON_ACCESS_TOKEN` | The token you get via `npx -y @newtonschool/newton-mcp@latest login`; the live adapter uses it or `~/.newton-mcp/credentials.json`. |
+| `NEWTON_COURSE_HASH` | Optional override for the course the concierge and planner read. |
+
+Setting these before a Vercel deploy ensures `/autopilot` and the dashboard both surface Newton feeds for scheduler confidence and scenario variance.
 
 ## Reviewer-friendly hosted flow
 
