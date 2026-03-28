@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Pulse
 
-## Getting Started
+Pulse is a Newton MCP-native student operating system built on Next.js.
 
-First, run the development server:
+The core thesis is simple: students do not need more dashboards. They need a system that decides what matters next, explains why, and adapts to the time they actually have.
+
+## What makes this a strong Newton MCP project
+
+Pulse is designed around real Newton surfaces, not generic student-product ideas.
+
+It uses Newton data to power:
+
+- a daily brief that explains what is going wrong before it compounds
+- a friction radar that names deadline pressure, lecture drift, and weak-topic drag
+- a week forecast that shows where the next five days become fragile
+- a dynamic intervention planner where a student picks `30 / 60 / 120 / 180` minutes and gets a realistic action sequence
+- a missed-class recovery engine
+- an adaptive practice coach connected to weak modules and streak surfaces
+
+## Newton MCP mapping
+
+The product contract is intentionally aligned to these Newton MCP calls:
+
+- `list_courses`
+- `get_course_overview`
+- `get_upcoming_schedule`
+- `get_assignments`
+- `get_recent_lectures`
+- `get_question_of_the_day`
+- `get_arena_stats`
+
+Those signals are normalized into a shared student snapshot so the UI can stay stable while the provider moves from demo to live mode.
+
+## Current build
+
+The current app already includes:
+
+- a differentiated landing/dashboard experience
+- deterministic health and risk scoring
+- a workload forecast for the next five days
+- dynamic time-window planning
+- deadline-aware recovery logic
+- Newton data-source documentation in code
+- a JSON demo API contract at `src/app/api/demo/brief/route.js`
+
+## Run locally
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Live Newton path
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Pulse now auto-detects local Newton MCP credentials from `~/.newton-mcp/credentials.json`.
 
-## Learn More
+1. Authenticate Newton once:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npx -y @newtonschool/newton-mcp@latest login
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. Run the app normally. If credentials are available, Pulse uses the live Newton API automatically.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. For hosted deployments, set `NEWTON_ACCESS_TOKEN` and optionally `NEWTON_COURSE_HASH` on the server.
 
-## Deploy on Vercel
+4. The adapter keeps the UI contract stable by normalizing live Newton responses into the shared Pulse snapshot shape in [`src/lib/newton-live.js`](/Users/uditjain/my-app/src/lib/newton-live.js).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+5. Persist daily briefs and completed interventions so Pulse gets smarter over time.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Why this is useful to everyone
+
+Most students know they are “behind”, but they cannot translate that feeling into a sequence.
+
+Pulse solves that by answering:
+
+- What should I do today?
+- What will hurt me this week?
+- How do I recover if I only have 30 minutes?
+- Which missed lecture is actually dangerous?
+- What practice move creates the most momentum right now?
+
+That makes it broadly useful across semesters, not just as a personal dashboard.
